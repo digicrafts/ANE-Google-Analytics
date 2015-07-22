@@ -25,7 +25,7 @@ DEFINE_ANE_FUNCTION(setAppName) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
 
     NSString *name;
     @try {
@@ -36,7 +36,8 @@ DEFINE_ANE_FUNCTION(setAppName) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'name' parameter on method '%s'.", __FUNCTION__);
     }
 
-    [tracker setAppName:name];
+//    [tracker setAppName:name];
+    [tracker set:kGAIAppName value:name];
 
     return result;
 }
@@ -52,7 +53,7 @@ DEFINE_ANE_FUNCTION(setAppVersion) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
 
     NSString *version;
     @try {
@@ -63,8 +64,9 @@ DEFINE_ANE_FUNCTION(setAppVersion) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'version' parameter on method '%s'.", __FUNCTION__);
     }
 
-    [tracker setAppVersion:version];
-
+//    [tracker setAppVersion:version];
+    [tracker set:kGAIAppVersion value:version];
+    
     return result;
 }
 DEFINE_ANE_FUNCTION(setAppID) {
@@ -79,7 +81,7 @@ DEFINE_ANE_FUNCTION(setAppID) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
 
     NSString *id;
     @try {
@@ -90,7 +92,8 @@ DEFINE_ANE_FUNCTION(setAppID) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'id' parameter on method '%s'.", __FUNCTION__);
     }
 
-    [tracker setAppId:id];
+//    [tracker setAppId:id];
+    [tracker set:kGAIAppId value:id];
 
     return result;
 }
@@ -106,11 +109,13 @@ DEFINE_ANE_FUNCTION(getAppID) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    NSString* appId = [tracker get:kGAIAppId];
     
-    if ([tracker appId] != nil) {
+//    if ([tracker appId] != nil) {
+    if (appId != nil) {
         @try {
-            result = [FREConversionUtil fromString:[tracker appId]];
+            result = [FREConversionUtil fromString:appId];
         }
         @catch (NSException *exception) {
             logEvent(context, kFatal, @"Unable to create the return value. [Exception:(type:%@, method:%s)].", [exception name], __FUNCTION__);

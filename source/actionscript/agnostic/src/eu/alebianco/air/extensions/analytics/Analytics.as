@@ -18,8 +18,8 @@ import flash.external.ExtensionContext;
 import flash.utils.Dictionary;
 import flash.utils.getQualifiedClassName;
 
-import mx.logging.ILogger;
-import mx.logging.Log;
+//import mx.logging.ILogger;
+//import mx.logging.Log;
 
 public final class Analytics implements IAnalytics {
 
@@ -29,7 +29,7 @@ public final class Analytics implements IAnalytics {
 	private static var instance:Analytics;
 	private static var canBuild:Boolean;
 
-	private var logger:ILogger;
+//	private var logger:ILogger;
 
 	private var context:ExtensionContext;
 	private var trackers:Dictionary;
@@ -67,7 +67,7 @@ public final class Analytics implements IAnalytics {
 		trackers = new Dictionary();
 
 		var className:String = getQualifiedClassName(this).replace("::", ".");
-		logger = Log.getLogger(className);
+//		logger = Log.getLogger(className);
 	}
 
 	public function get version():String {
@@ -151,7 +151,7 @@ public final class Analytics implements IAnalytics {
 		context.dispose();
 		context.removeEventListener(StatusEvent.STATUS, statusHandler);
 		context = null;
-		logger = null;
+//		logger = null;
 		trackers = null;
 		instance = null;
 	}
@@ -176,22 +176,22 @@ public final class Analytics implements IAnalytics {
 	logStatusLevel function processStatusEvent(level:String, code:String):void {
 		switch (level.toUpperCase()) {
 			case "INFO":
-				logger.info(code);
+//				logger.info(code);
 				break;
 			case "DEBUG":
-				logger.debug(code);
+//				logger.debug(code);
 				break;
 			case "WARN":
-				logger.warn(code);
+//				logger.warn(code);
 				break;
 			case "ERROR":
-				logger.error(code);
+//				logger.error(code);
 				break;
 			case "FATAL":
-				logger.fatal(code);
+//				logger.fatal(code);
 				break;
 			default:
-				logger.debug("AsyncStatusEvent level (" + level + ") unknown.");
+//				logger.debug("AsyncStatusEvent level (" + level + ") unknown.");
 				break;
 		}
 	}

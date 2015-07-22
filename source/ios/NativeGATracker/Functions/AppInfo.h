@@ -13,6 +13,7 @@
 #import "FREConversionUtil.h"
 #import "FREUtils.h"
 #import "GAI.h"
+#import "GAIFields.h"
 
 @interface AppInfo : NSObject
 

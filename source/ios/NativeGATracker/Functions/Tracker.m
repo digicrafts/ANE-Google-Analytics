@@ -17,7 +17,8 @@ FREObject trackException(FREContext context, id tracker, FREObject *data);
 FREObject trackSocial(FREContext context, id tracker, FREObject *data);
 FREObject trackTiming(FREContext context, id tracker, FREObject *data);
 FREObject trackTransaction(FREContext context, id tracker, FREObject *data);
-GAITransactionItem *getProductAt(NSUInteger index, FREObject array);
+//GAITransactionItem *getProductAt(NSUInteger index, FREObject array);
+GAIEcommerceProduct *getProductAt(NSUInteger index, FREObject array);
 
 kHitType hitTypeStringToEnum(NSString *name) {
     NSArray *hitTypeArray = [[[NSArray alloc] initWithObjects:kHitTypeArray, nil] autorelease];
@@ -40,10 +41,11 @@ DEFINE_ANE_FUNCTION(getAnonymous) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
-
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    
     @try {
-        result = [FREConversionUtil fromBoolean:[tracker anonymize]];
+        NSString* value = [tracker get:kGAIAnonymizeIp];
+        result = [FREConversionUtil fromBoolean:[value isEqualToString:@"NO"]];
     }
     @catch (NSException *exception) {
         logEvent(context, kFatal, @"Unable to create the return value. [Exception:(type:%@, method:%s)].", [exception name], __FUNCTION__);
@@ -64,7 +66,7 @@ DEFINE_ANE_FUNCTION(setAnonymous) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
 
     BOOL flag;
     @try {
@@ -75,7 +77,8 @@ DEFINE_ANE_FUNCTION(setAnonymous) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'flag' parameter on method '%s'.", __FUNCTION__);
     }
 
-    [tracker setAnonymize:flag];
+//    [tracker setAnonymize:flag];
+    [tracker set:kGAIAnonymizeIp value:flag?@"YES":@"NO"];
 
     return result;
 }
@@ -91,10 +94,12 @@ DEFINE_ANE_FUNCTION(getSecure) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
 
     @try {
-        result = [FREConversionUtil fromBoolean:[tracker useHttps]];
+        NSString* value = [tracker get:kGAIUseSecure];
+        result = [FREConversionUtil fromBoolean:[value isEqualToString:@"NO"]];
+//        result = [FREConversionUtil fromBoolean:[tracker useHttps]];
     }
     @catch (NSException *exception) {
         logEvent(context, kFatal, @"Unable to create the return value. [Exception:(type:%@, method:%s)].", [exception name], __FUNCTION__);
@@ -115,7 +120,7 @@ DEFINE_ANE_FUNCTION(setSecure) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
 
     BOOL flag;
     @try {
@@ -126,7 +131,8 @@ DEFINE_ANE_FUNCTION(setSecure) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'flag' parameter on method '%s'.", __FUNCTION__);
     }
 
-    [tracker setUseHttps:flag];
+//    [tracker setUseHttps:flag];
+    [tracker set:kGAIUseSecure value:flag?@"YES":@"NO"];
 
     return result;
 }
@@ -142,10 +148,12 @@ DEFINE_ANE_FUNCTION(getSampleRate) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
 
     @try {
-        result = [FREConversionUtil fromNumber:[NSNumber numberWithDouble:[tracker sampleRate]]];
+        double value = [[tracker get:kGAISampleRate] doubleValue];
+        result = [FREConversionUtil fromNumber:[NSNumber numberWithDouble:value]];
+//        result = [FREConversionUtil fromNumber:[NSNumber numberWithDouble:[tracker sampleRate]]];
     }
     @catch (NSException *exception) {
         logEvent(context, kFatal, @"Unable to create the return value. [Exception:(type:%@, method:%s)].", [exception name], __FUNCTION__);
@@ -166,7 +174,7 @@ DEFINE_ANE_FUNCTION(setSampleRate) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
 
     NSNumber *rate;
     @try {
@@ -177,8 +185,9 @@ DEFINE_ANE_FUNCTION(setSampleRate) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'rate' parameter on method '%s'.", __FUNCTION__);
     }
 
-    [tracker setSampleRate:[rate doubleValue]];
-
+//    [tracker setSampleRate:[rate doubleValue]];
+    [tracker set:kGAISampleRate value:[rate stringValue]];
+    
     return result;
 }
 DEFINE_ANE_FUNCTION(startNewSession) {
@@ -193,8 +202,14 @@ DEFINE_ANE_FUNCTION(startNewSession) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
-    [tracker setSessionStart:YES];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+//    [tracker setSessionStart:YES];
+    
+    // Instead, send a single hit with session control to start the new session.
+    [tracker send:[[[GAIDictionaryBuilder createEventWithCategory:@"UX"
+                                                           action:@"appstart"
+                                                            label:nil
+                                                            value:nil] set:@"start" forKey:kGAISessionControl] build]];
 
     return result;
 }
@@ -210,7 +225,7 @@ DEFINE_ANE_FUNCTION(trackData) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
 
     NSString *type;
     @try {
@@ -253,7 +268,7 @@ DEFINE_ANE_FUNCTION(setCustomMetric) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
 
     NSInteger index;
     @try {
@@ -273,8 +288,10 @@ DEFINE_ANE_FUNCTION(setCustomMetric) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'value' parameter on method '%s'.", __FUNCTION__);
     }
 
-    [tracker setCustom:index metric:value];
-
+//    [tracker setCustom:index metric:value];
+    [tracker set:[GAIFields customMetricForIndex:index]
+           value:[value stringValue]];
+    
     return result;
 }
 DEFINE_ANE_FUNCTION(setCustomDimension) {
@@ -289,7 +306,7 @@ DEFINE_ANE_FUNCTION(setCustomDimension) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
 
     NSInteger index;
     @try {
@@ -309,8 +326,10 @@ DEFINE_ANE_FUNCTION(setCustomDimension) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'value' parameter on method '%s'.", __FUNCTION__);
     }
 
-    [tracker setCustom:index dimension:value];
-
+//    [tracker setCustom:index dimension:value];
+    [tracker set:[GAIFields customDimensionForIndex:index]
+           value:value];
+    
     return result;
 }
 DEFINE_ANE_FUNCTION(clearCustomMetric) {
@@ -325,7 +344,7 @@ DEFINE_ANE_FUNCTION(clearCustomMetric) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
 
     NSInteger index;
     @try {
@@ -336,8 +355,10 @@ DEFINE_ANE_FUNCTION(clearCustomMetric) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'index' parameter on method '%s'.", __FUNCTION__);
     }
 
-    [tracker setCustom:index metric:nil];
-
+//    [tracker setCustom:index metric:nil];
+    [tracker set:[GAIFields customMetricForIndex:index]
+           value:nil];
+    
     return result;
 }
 DEFINE_ANE_FUNCTION(clearCustomDimension) {
@@ -352,7 +373,7 @@ DEFINE_ANE_FUNCTION(clearCustomDimension) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
 
     NSInteger index;
     @try {
@@ -363,8 +384,10 @@ DEFINE_ANE_FUNCTION(clearCustomDimension) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'index' parameter on method '%s'.", __FUNCTION__);
     }
 
-    [tracker setCustom:index dimension:nil];
-
+//    [tracker setCustom:index dimension:nil];
+    [tracker set:[GAIFields customDimensionForIndex:index]
+           value:nil];
+    
     return result;
 }
 
@@ -381,7 +404,13 @@ FREObject trackView(FREContext context, id tracker, FREObject *data) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read a property on method '%s'.", __FUNCTION__);
     }
 
-    [tracker trackView:screen];
+//    [tracker trackView:screen];
+    [tracker set:kGAIScreenName
+           value:screen];
+    
+    // New SDK versions
+    [tracker send:[[GAIDictionaryBuilder createScreenView] build]];
+    
     return NULL;
 }
 FREObject trackEvent(FREContext context, id tracker, FREObject *data) {
@@ -416,8 +445,11 @@ FREObject trackEvent(FREContext context, id tracker, FREObject *data) {
         value = nil;
     }
 
-    [tracker sendEventWithCategory:category withAction:action withLabel:label withValue:value];
-
+//    [tracker sendEventWithCategory:category withAction:action withLabel:label withValue:value];
+    [tracker send:[[GAIDictionaryBuilder createEventWithCategory:category           // Event category (required)
+                                                          action:action             // Event action (required)
+                                                           label:label              // Event label
+                                                           value:value] build]];    // Event value
     return NULL;
 }
 FREObject trackException(FREContext context, id tracker, FREObject *data) {
@@ -441,7 +473,10 @@ FREObject trackException(FREContext context, id tracker, FREObject *data) {
         description = @"";
     }
 
-    [tracker sendException:fatal withDescription:description];
+//    [tracker sendException:fatal withDescription:description];
+    [tracker send:[[GAIDictionaryBuilder
+                    createExceptionWithDescription:description  // Exception description. May be truncated to 100 chars.
+                    withFatal:[NSNumber numberWithBool:fatal]] build]];  // isFatal (required). NO indicates non-fatal exception.
 
     return NULL;
 }
@@ -477,8 +512,12 @@ FREObject trackTiming(FREContext context, id tracker, FREObject *data) {
         label = nil;
     }
 
-    [tracker sendTimingWithCategory:category withValue:interval withName:name withLabel:label];
-
+//    [tracker sendTimingWithCategory:category withValue:interval withName:name withLabel:label];
+    [tracker send:[[GAIDictionaryBuilder createTimingWithCategory:category                          // Timing category
+                                                         interval:@((NSUInteger)(interval * 1000))   // Timing interval
+                                                             name:name                              // Timing name
+                                                            label:label] build]];
+    
     return NULL;
 }
 FREObject trackSocial(FREContext context, id tracker, FREObject *data) {
@@ -504,22 +543,122 @@ FREObject trackSocial(FREContext context, id tracker, FREObject *data) {
         content = nil;
     }
 
-    [tracker sendSocial:network withAction:action withTarget:content];
-
+//    [tracker sendSocial:network withAction:action withTarget:content];
+    [tracker send:[[GAIDictionaryBuilder createSocialWithNetwork:network          // Social network (required)
+                                                         action:action            // Social action (required)
+                                                         target:content] build]];  // Social target
     return NULL;
 }
-FREObject trackTransaction(FREContext context, id tracker, FREObject *data) {
+//FREObject trackTransaction(FREContext context, id tracker, FREObject *data) {
+//
+//    NSString *id;
+//    NSNumber *cost;
+//    NSString *affiliation;
+//    NSNumber *shipping;
+//    NSNumber *tax;
+//    NSString *currency;
+//
+//    NSUInteger prodc;
+//    FREObject *products;
+//
+//    @try {
+//        id = [FREConversionUtil toString:[FREConversionUtil getProperty:@"id" fromObject:data]];
+//        cost = [FREConversionUtil toNumber:[FREConversionUtil getProperty:@"cost" fromObject:data]];
+//        products = [FREConversionUtil getProperty:@"products" fromObject:data];
+//        prodc = [FREConversionUtil getArrayLength:products];
+//    }
+//    @catch (NSException *exception) {
+//        logEvent(context, kFatal, @"Unable to read a property. [Exception:(type:%@, method:%s)].", [exception name], __FUNCTION__);
+//        return createRuntimeException(@"ArgumentError", 0, @"Unable to read a property on method '%s'.", __FUNCTION__);
+//    }
+//
+//    @try {
+//        affiliation = [FREConversionUtil toString:[FREConversionUtil getProperty:@"affiliation" fromObject:data]];
+//    }
+//    @catch (NSException *exception) {
+//        logEvent(context, kInfo, @"Unable to read a property, falling back to default label. [Exception:(type:%@, method:%s)].", [exception name], __FUNCTION__);
+//        affiliation = nil;
+//    }
+//
+//    @try {
+//        shipping = [FREConversionUtil toNumber:[FREConversionUtil getProperty:@"shipping" fromObject:data]];
+//    }
+//    @catch (NSException *exception) {
+//        logEvent(context, kInfo, @"Unable to read a property, falling back to default label. [Exception:(type:%@, method:%s)].", [exception name], __FUNCTION__);
+//        shipping = nil;
+//    }
+//
+//    @try {
+//        tax = [FREConversionUtil toNumber:[FREConversionUtil getProperty:@"tax" fromObject:data]];
+//    }
+//    @catch (NSException *exception) {
+//        logEvent(context, kInfo, @"Unable to read a property, falling back to default label. [Exception:(type:%@, method:%s)].", [exception name], __FUNCTION__);
+//        tax = nil;
+//    }
+//    
+//    @try {
+//        currency = [FREConversionUtil toString:[FREConversionUtil getProperty:@"currency" fromObject:data]];
+//        logEvent(context, kWarn, @"Currency codes are not supported by the current iOS implementation, this parameter will be ignored.");
+//    }
+//    @catch (NSException *exception) {
+//        logEvent(context, kInfo, @"Unable to read a property, falling back to default label. [Exception:(type:%@, method:%s)].", [exception name], __FUNCTION__);
+//        currency = nil;
+//    }
+//
+//    GAITransaction *transaction = [GAITransaction transactionWithId:id withAffiliation:affiliation];
+//    transaction.revenueMicros = (int64_t) [[NSNumber numberWithFloat:[cost floatValue] * 1000000] integerValue];
+//    if (tax != nil)
+//        transaction.taxMicros = (int64_t) [[NSNumber numberWithFloat:[tax floatValue] * 1000000] integerValue];
+//    if (shipping != nil)
+//        transaction.shippingMicros = (int64_t) [[NSNumber numberWithFloat:[shipping floatValue] * 1000000] integerValue];
+//
+//    @try {
+//        for (NSUInteger i = 0; i < prodc; i++) {
+//            GAITransactionItem *item = getProductAt(i, products);
+//            [transaction addItem:item];
+//        }
+//    }
+//    @catch (NSException *exception) {
+//        logEvent(context, kFatal, @"Unable to read a property. [Exception:(type:%@, method:%s)].", [exception name], __FUNCTION__);
+//        return createRuntimeException(@"ArgumentError", 0, @"Unable to read a property on method '%s'.", __FUNCTION__);
+//    }
+//
+//    [tracker sendTransaction:transaction];
+//
+//    return NULL;
+//}
+//GAITransactionItem *getProductAt(NSUInteger index, FREObject array) {
+//
+//    FREObject *product = [FREConversionUtil getArrayItemAt:index on:array];
+//
+//    NSString *sku = [FREConversionUtil toString:[FREConversionUtil getProperty:@"sku" fromObject:product]];
+//    NSString *name = [FREConversionUtil toString:[FREConversionUtil getProperty:@"name" fromObject:product]];
+//    NSNumber *price = [FREConversionUtil toNumber:[FREConversionUtil getProperty:@"price" fromObject:product]];
+//    NSInteger quantity = [FREConversionUtil toInt:[FREConversionUtil getProperty:@"quantity" fromObject:product]];
+//
+//    NSString *category;
+//    @try {
+//        category = [FREConversionUtil toString:[FREConversionUtil getProperty:@"sku" fromObject:product]];
+//    }
+//    @catch (NSException *exception) {
+//        category = nil;
+//    }
+//
+//    return [GAITransactionItem itemWithCode:sku name:name category:category priceMicros:(int64_t) [[NSNumber numberWithFloat:[price floatValue] * 1000000] integerValue] quantity:quantity];
+//}
 
+FREObject trackTransaction(FREContext context, id tracker, FREObject *data) {
+    
     NSString *id;
     NSNumber *cost;
     NSString *affiliation;
     NSNumber *shipping;
     NSNumber *tax;
     NSString *currency;
-
+    
     NSUInteger prodc;
     FREObject *products;
-
+    
     @try {
         id = [FREConversionUtil toString:[FREConversionUtil getProperty:@"id" fromObject:data]];
         cost = [FREConversionUtil toNumber:[FREConversionUtil getProperty:@"cost" fromObject:data]];
@@ -530,7 +669,7 @@ FREObject trackTransaction(FREContext context, id tracker, FREObject *data) {
         logEvent(context, kFatal, @"Unable to read a property. [Exception:(type:%@, method:%s)].", [exception name], __FUNCTION__);
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read a property on method '%s'.", __FUNCTION__);
     }
-
+    
     @try {
         affiliation = [FREConversionUtil toString:[FREConversionUtil getProperty:@"affiliation" fromObject:data]];
     }
@@ -538,7 +677,7 @@ FREObject trackTransaction(FREContext context, id tracker, FREObject *data) {
         logEvent(context, kInfo, @"Unable to read a property, falling back to default label. [Exception:(type:%@, method:%s)].", [exception name], __FUNCTION__);
         affiliation = nil;
     }
-
+    
     @try {
         shipping = [FREConversionUtil toNumber:[FREConversionUtil getProperty:@"shipping" fromObject:data]];
     }
@@ -546,7 +685,7 @@ FREObject trackTransaction(FREContext context, id tracker, FREObject *data) {
         logEvent(context, kInfo, @"Unable to read a property, falling back to default label. [Exception:(type:%@, method:%s)].", [exception name], __FUNCTION__);
         shipping = nil;
     }
-
+    
     @try {
         tax = [FREConversionUtil toNumber:[FREConversionUtil getProperty:@"tax" fromObject:data]];
     }
@@ -563,38 +702,51 @@ FREObject trackTransaction(FREContext context, id tracker, FREObject *data) {
         logEvent(context, kInfo, @"Unable to read a property, falling back to default label. [Exception:(type:%@, method:%s)].", [exception name], __FUNCTION__);
         currency = nil;
     }
+    
+    GAIDictionaryBuilder *builder = [GAIDictionaryBuilder createEventWithCategory:@"Ecommerce"
+                                                                           action:@"Purchase"
+                                                                            label:nil
+                                                                            value:nil];
+    
+    GAIEcommerceProductAction *action = [[GAIEcommerceProductAction alloc] init];
+    [action setAction:kGAIPAPurchase];
+    [action setTransactionId:id];
+    [action setAffiliation:affiliation];
+    [action setRevenue:cost];
+    [action setTax:tax];
+    [action setShipping:shipping];
+    [builder setProductAction:action];
 
-    GAITransaction *transaction = [GAITransaction transactionWithId:id withAffiliation:affiliation];
-    transaction.revenueMicros = (int64_t) [[NSNumber numberWithFloat:[cost floatValue] * 1000000] integerValue];
-    if (tax != nil)
-        transaction.taxMicros = (int64_t) [[NSNumber numberWithFloat:[tax floatValue] * 1000000] integerValue];
-    if (shipping != nil)
-        transaction.shippingMicros = (int64_t) [[NSNumber numberWithFloat:[shipping floatValue] * 1000000] integerValue];
-
+    
     @try {
         for (NSUInteger i = 0; i < prodc; i++) {
-            GAITransactionItem *item = getProductAt(i, products);
-            [transaction addItem:item];
+            GAIEcommerceProduct *item = getProductAt(i, products);
+            [builder addProduct:item];
         }
     }
     @catch (NSException *exception) {
         logEvent(context, kFatal, @"Unable to read a property. [Exception:(type:%@, method:%s)].", [exception name], __FUNCTION__);
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read a property on method '%s'.", __FUNCTION__);
     }
-
-    [tracker sendTransaction:transaction];
-
+    
+//    [tracker sendTransaction:transaction];
+    // Sets the product for the next available slot, starting with 1
+    [tracker send:[builder build]];
+    
+    
     return NULL;
 }
-GAITransactionItem *getProductAt(NSUInteger index, FREObject array) {
 
+
+GAIEcommerceProduct *getProductAt(NSUInteger index, FREObject array) {
+    
     FREObject *product = [FREConversionUtil getArrayItemAt:index on:array];
-
+    
     NSString *sku = [FREConversionUtil toString:[FREConversionUtil getProperty:@"sku" fromObject:product]];
     NSString *name = [FREConversionUtil toString:[FREConversionUtil getProperty:@"name" fromObject:product]];
     NSNumber *price = [FREConversionUtil toNumber:[FREConversionUtil getProperty:@"price" fromObject:product]];
     NSInteger quantity = [FREConversionUtil toInt:[FREConversionUtil getProperty:@"quantity" fromObject:product]];
-
+    
     NSString *category;
     @try {
         category = [FREConversionUtil toString:[FREConversionUtil getProperty:@"sku" fromObject:product]];
@@ -602,8 +754,14 @@ GAITransactionItem *getProductAt(NSUInteger index, FREObject array) {
     @catch (NSException *exception) {
         category = nil;
     }
-
-    return [GAITransactionItem itemWithCode:sku name:name category:category priceMicros:(int64_t) [[NSNumber numberWithFloat:[price floatValue] * 1000000] integerValue] quantity:quantity];
+    
+    GAIEcommerceProduct *p = [[GAIEcommerceProduct alloc] init];
+    [p setId:sku];
+    [p setName:name];
+    [p setCategory:category];
+    [p setPrice:price];
+    [p setQuantity:quantity];
+    
+    return p;
 }
-
 

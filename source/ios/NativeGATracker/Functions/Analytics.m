@@ -30,9 +30,14 @@ DEFINE_ANE_FUNCTION(createTracker) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
-    [tracker setSessionTimeout:-1];
-
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+//    [tracker setSessionTimeout:-1];
+    // Instead, send a single hit with session control to start the new session.
+    [tracker send:[[[GAIDictionaryBuilder createEventWithCategory:@"UX"
+                                                           action:@"appstart"
+                                                            label:nil
+                                                            value:nil] set:@"start" forKey:kGAISessionControl] build]];
+    
     return result;
 }
 DEFINE_ANE_FUNCTION(closeTracker) {
@@ -47,8 +52,8 @@ DEFINE_ANE_FUNCTION(closeTracker) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'trackingId' parameter on method '%s'.", __FUNCTION__);
     }
 
-    id tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
-    [tracker close];
+    id<GAITracker> tracker = [[GAI sharedInstance] trackerWithTrackingId:trackingId];
+//    [tracker close];
 
     return result;
 }
@@ -64,14 +69,16 @@ DEFINE_ANE_FUNCTION(setDebug) {
         return createRuntimeException(@"ArgumentError", 0, @"Unable to read the 'value' parameter on method '%s'.", __FUNCTION__);
     }
 
-    [[GAI sharedInstance] setDebug:value];
-
+//    [[GAI sharedInstance] setDebug:value];
+    [[GAI sharedInstance].logger setLogLevel:kGAILogLevelVerbose];
+    
     return result;
 }
 DEFINE_ANE_FUNCTION(getDebug) {
     FREObject result = NULL;
 
-    BOOL value = [[GAI sharedInstance] debug];
+//    BOOL value = [[GAI sharedInstance] debug];
+    BOOL value = ([[GAI sharedInstance].logger logLevel] == kGAILogLevelVerbose);
 
     @try {
         result = [FREConversionUtil fromBoolean:value];

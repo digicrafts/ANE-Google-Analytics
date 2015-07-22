@@ -13,6 +13,9 @@
 #import "FREConversionUtil.h"
 #import "FREUtils.h"
 #import "GAI.h"
+#import "GAIFields.h"
+#import "GAIEcommerceFields.h"
+#import "GAIDictionaryBuilder.h"
 
 @interface Analytics : NSObject
 

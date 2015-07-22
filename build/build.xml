@@ -143,7 +143,7 @@
                 <archives>
                     <zips>
                         <fileset dir="${src.and.dir}/libs" includes="**/*.jar"
-                                 excludes="**/FlashRuntimeExtensions.jar"/>
+                                 excludes="**/FlashRuntimeExtensions.jar,**/libGoogleAnalyticsV2.jar"/>
                     </zips>
                 </archives>
             </restrict>
@@ -160,7 +160,9 @@
         <mkdir dir="${bin.ios.dir}"/>
         <mkdir dir="${tmp.dir}"/>
         <antcall target="ext_ios">
-            <param name="arch" value="armv7"/>
+            <!--<param name="arch" value="arm64"/>-->
+            <!--<param name="arch" value="armv7"/>-->
+            <!--<param name="arch" value="armv7s"/>-->
             <param name="sdk" value="iphoneos"/>
             <param name="dir" value="${bin.ios.dir}"/>
         </antcall>
@@ -182,9 +184,10 @@
         <!-- Build iOS native library -->
         <exec executable="xcodebuild" failonerror="true" dir="${src.ios.dir}">
             <arg line="-project ${project.name}.xcodeproj"/>
-            <arg line="-target ${project.name}"/>
+            <!--<arg line="-target ${project.name}"/>-->
             <arg line="-configuration Release"/>
-            <arg line="-arch ${arch}"/>
+            <arg line="-alltargets"/>
+            <!--<arg line="-arch ${arch}"/>-->
             <arg line="-sdk ${sdk}"/>
             <arg line="SYMROOT=${tmp.dir}"/>
         </exec>
@@ -230,15 +233,15 @@
     </target>
     <target name="ext_as3">
         <!-- Build Actionscript extension bridge -->
-        <java jar="${FLEX_HOME}/lib/compc.jar" dir="${FLEX_HOME}/frameworks" fork="true" failonerror="true">
+        <java jar="${FLEX_HOME}/lib/compc-cli.jar" dir="${FLEX_HOME}/frameworks" fork="true" failonerror="true">
             <arg line="-output ${tmp.dir}/library.swc"/>
             <arg line="-swf-version 14"/>
             <arg line="-include-sources+=${source}/src"/>
             <arg line="-library-path+='${source}/libs'"/>
             <arg line="-source-path+='./','${source}/src'"/>
             <arg line="-load-config=air-config.xml" />
-            <arg line="-static-link-runtime-shared-libraries=true"/>
-            <arg line="-verbose-stacktraces=true"/>
+            <!--<arg line="-static-link-runtime-shared-libraries=true"/>-->
+            <!--<arg line="-verbose-stacktraces=true"/>-->
             <arg line="-headless-server=true"/>
         </java>
         <mkdir dir="${tmp.dir}/content"/>
@@ -256,15 +259,15 @@
         <!-- Package the final extension for mac platforms -->
         <java jar="${FLEX_HOME}/lib/adt.jar" fork="true" failonerror="true">
             <arg line="-package"/>
-            <arg line="-storetype pkcs12"/>
-            <arg line="-keystore ${crt.file}"/>
-            <arg line="-storepass ${crt.password}"/>
-            <arg line="-tsa none"/>
+            <!--<arg line="-storetype pkcs12"/>-->
+            <!--<arg line="-keystore ${crt.file}"/>-->
+            <!--<arg line="-storepass ${crt.password}"/>-->
+            <!--<arg line="-tsa none"/>-->
             <arg line="-target ane ${bin.dir}/${project.name.versioned}.ane ${extension.descriptor}"/>
             <arg line="-swc bin/${project.name.versioned}.swc"/>
             <arg line="-platform Android-ARM -C ${bin.and.dir} ."/>
             <arg line="-platform iPhone-ARM -platformoptions ${ios.platform.options} -C ${bin.ios.dir} ."/>
-            <arg line="-platform iPhone-x86 -platformoptions ${ios.platform.options} -C ${bin.iossim.dir} ."/>
+            <!--<arg line="-platform iPhone-x86 -platformoptions ${ios.platform.options} -C ${bin.iossim.dir} ."/>-->
             <arg line="-platform default -C ${bin.def.dir} ."/>
         </java>
     </target>

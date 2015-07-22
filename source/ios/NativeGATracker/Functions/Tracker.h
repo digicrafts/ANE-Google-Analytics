@@ -13,6 +13,10 @@
 #import "FREConversionUtil.h"
 #import "FREUtils.h"
 #import "GAI.h"
+#import "GAIFields.h"
+#import "GAIEcommerceFields.h"
+#import "GAIDictionaryBuilder.h"
+#import "GAIEcommerceProduct.h"
 
 typedef enum {
     NONE,
